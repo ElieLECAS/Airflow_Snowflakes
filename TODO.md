@@ -12,8 +12,8 @@ Environnement retenu : Windows, Git Bash, Docker Desktop, pas de WSL (Airflow vi
 - [x] Récupérer le kit de démarrage dans ce dossier (sparse-checkout ; `core.longpaths` nécessaire sous Windows)
 - [x] `git init` + `.gitattributes` (`eol=lf`) pour éviter le CRLF dans les `.sql` et `.sh` (aucun commit fait)
 - [ ] `bash verifier_poste.sh` : tout en `OK`
-- [ ] Créer le dépôt GitHub **public** et pousser le kit
-- [x] Créer le compte d'essai Snowflake (Enterprise, région européenne, sans carte bancaire)
+- [x] Créer le dépôt GitHub **public** et pousser le kit (https://github.com/ElieLECAS/Airflow_Snowflakes, vérifié public)
+- [x] Créer le compte d'essai Snowflake (Enterprise, région européenne, sans carte bancaire) : région vérifiée `AWS_EU_WEST_3` (Paris) ; édition Enterprise non vérifiée (Admin > Accounts)
 - [x] Noter l'identifiant de compte `ORGANISATION-COMPTE` (lu dans l'URL de Snowsight ; gardé hors du dépôt, passé par la variable `SNOWFLAKE_ACCOUNT`)
 - [ ] Décider : un compte Snowflake pour le binôme ou un chacun ; un utilisateur de service commun ou un par personne
 - [ ] Lire le `README.md` du kit
@@ -82,7 +82,7 @@ Ordre : rôle, rattachement à SYSADMIN, warehouse, base, schémas, droits, util
 ### Résultat à obtenir
 - [x] **L'utilisateur de service se connecte depuis le poste avec sa clé** (utilisateur, rôle et warehouse affichés)
 - [x] Aucune clé, aucun `.env` dans `git status` (vérifié : `data/` et `.venv/` ignorés, seul `.env.example` contient un exemple de clé)
-- [ ] Commit + push du jour 1
+- [x] Commit + push du jour 1 (`228e4a3`)
 
 ---
 
@@ -94,16 +94,17 @@ Compétences visées : C8, C14
 
 - [ ] Lire `CONTRAT_RAW.md` (noms et colonnes exacts, dont `_source_file` et `_loaded_at`)
 - [ ] Suivre le guide sur son exemple
-- [ ] Créer, **avec le rôle des outils** (jamais ACCOUNTADMIN) : formats de fichier, stage, tables `YELLOW_TRIPDATA` et `TAXI_ZONE_LOOKUP`
-- [ ] Choisir des types larges en RAW (nombres à décimales, tolérer les variations de colonnes entre mois)
-- [ ] `PUT` de janvier depuis Python (le `PUT` ne marche pas dans Snowsight), fichier à la racine du stage
-- [ ] `COPY INTO` avec `_source_file` = nom exact du fichier et `_loaded_at` remplis
-- [ ] Relancer le chargement : aucune ligne en double
-- [ ] Script Python `ingestion/` paramétré par le mois (télécharge, dépose, charge) + `requirements.txt`
-- [ ] Charger les 265 zones
+- [x] Créer, **avec le rôle des outils** (jamais ACCOUNTADMIN) : formats de fichier, stage, tables `YELLOW_TRIPDATA` (22 colonnes) et `TAXI_ZONE_LOOKUP` (6) : `snowflake/03_raw.sql`, 5 objets propriétés de `TRANSFORMER`
+- [x] Choisir des types larges en RAW (`NUMBER` / `FLOAT` / `TIMESTAMP_NTZ` / `VARCHAR` ; colonnes absentes d'un mois restent vides via `MATCH_BY_COLUMN_NAME`)
+- [x] `PUT` de janvier depuis Python (le `PUT` ne marche pas dans Snowsight), fichier à la racine du stage : `UPLOADED`
+- [x] `COPY INTO` avec `_source_file` = nom exact du fichier et `_loaded_at` remplis : 3 475 226 lignes, les 10 valeurs de contrôle identiques au Parquet (sommes, dates min/max, NULL, anomalies) ; `USE_LOGICAL_TYPE = TRUE` a bien lu les dates
+- [x] Relancer le chargement : aucune ligne en double (2e exécution depuis PowerShell : `PUT` SKIPPED, `COPY` « déjà chargé », toujours 3 475 226 lignes)
+- [x] Script Python `ingestion/charger.py` paramétré par le mois (télécharge, dépose, charge) + `requirements.txt` : testé sur les trajets (janvier + rejeu) et sur les zones
+- [x] Charger les 265 zones (265 ids distincts de 1 à 265, `N/A` conservés en texte, aucune valeur NULL)
 - [ ] (Option Docker) petit `Dockerfile` pour le script, clé montée en volume, jamais dans l'image
-- [ ] Vérifications du contrat (`SHOW TABLES`, comptages, décimales conservées)
-- [ ] **Résultat : 3 475 226 lignes pour janvier, 265 zones, un 2e chargement n'ajoute rien**
+- [x] Vérifications du contrat (propriétaires, comptages, décimales conservées via les sommes) : `snowflake/verifications_raw.sql`
+- [x] Capture de l'historique de chargement (partie C de `verifications_raw.sql`) : `docs/captures/jour2_historique_chargement.png` (2 fichiers `Loaded`, 3 475 226 et 265 lignes)
+- [x] **Résultat : 3 475 226 lignes pour janvier, 265 zones, un 2e chargement n'ajoute rien**
 
 ---
 
