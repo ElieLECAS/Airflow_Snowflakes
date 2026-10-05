@@ -8,7 +8,7 @@ Environnement retenu : Windows, Git Bash, Docker Desktop, pas de WSL (Airflow vi
 ## Avant le jour 1 : poste et dépôt
 
 - [ ] Désactiver l'alias Microsoft Store `python3.exe` (Paramètres, Applications, Paramètres avancés, Alias d'exécution)
-- [ ] Installer Astro CLI : `winget install Astronomer.Astro`
+- [x] Installer Astro CLI : `winget install Astronomer.Astro` (v1.46.0 ; winget a aussi installé le client Podman CLI 6.1.3, sans machine Podman créée ; Docker Desktop reste le moteur utilisé)
 - [x] Récupérer le kit de démarrage dans ce dossier (sparse-checkout ; `core.longpaths` nécessaire sous Windows)
 - [x] `git init` + `.gitattributes` (`eol=lf`) pour éviter le CRLF dans les `.sql` et `.sh` (aucun commit fait)
 - [ ] `bash verifier_poste.sh` : tout en `OK`
@@ -115,14 +115,16 @@ Dossier : `airflow/`
 Compétences visées : C8, C15, C16
 
 - [ ] Lire les sections 1 à 5 (attention : syntaxe Airflow 3, `from airflow.sdk import dag, task`, `schedule`)
-- [ ] `astro dev init` dans `airflow/` (répondre `y`), supprimer `dags/exampledag.py`
-- [ ] Créer `airflow/.env` depuis `.env.example` (clé privée sur une seule ligne), **jamais commité**
-- [ ] `astro dev start` : l'interface Airflow s'ouvre
-- [ ] Mini DAG qui exécute `SELECT CURRENT_ROLE()` : connexion `snowflake_nyc_taxi` prouvée
+- [x] `astro dev init --force --name nyc-taxi` dans `airflow/` (Runtime `3.3-8`, aucun fichier du kit modifié), `dags/exampledag.py` supprimé
+- [x] Créer `airflow/.env` (clé privée sur une seule ligne), **jamais commité** : généré par `airflow/generer_env.py` (1 ligne, 28 retours à la ligne de la clé échappés, ignoré par Git et par `.dockerignore`) ; connexion pas encore testée
+- [x] `astro dev start` : l'interface Airflow s'ouvre (5 conteneurs sous Docker, `http://localhost:8080` répond ; l'avertissement « proxy daemon » est sans effet sous Windows)
+- [x] Mini DAG `airflow/dags/test_connexion.py` : connexion `snowflake_nyc_taxi` prouvée, le journal de la tâche affiche `('AIRFLOW_SVC', 'TRANSFORMER', 'NYC_TAXI_WH')`
+- [ ] **Rotation de la clé privée** : elle a été affichée en clair dans la conversation (commande `connections get`) ; ancienne clé à retirer (`UNSET RSA_PUBLIC_KEY`) après bascule sur `RSA_PUBLIC_KEY_2`
+- [ ] Capture du mini-DAG en succès (facultative) dans `docs/captures/`
 - [ ] DAG de chargement : vérifier que le fichier du mois existe, télécharger, `PUT`, `COPY INTO`
 - [ ] Nom du fichier calculé à partir de la **date logique**, pas de la date du jour
 - [ ] Relances automatiques (`retries`) sur le chargement
-- [ ] Activer le DAG avec l'interrupteur (pas de **Trigger** manuel), catchup sur janvier, février, mars 2025
+- [ ] Activer le DAG avec l'interrupteur (pas de **Trigger** manuel), catchup sur janvier, février, mars 2025 (décision : janvier reste chargé, son run démontrera le rejeu `PUT` SKIPPED / « déjà chargé » ; février et mars se chargent pour de vrai)
 - [ ] Après toute modification du `.env` : `astro dev restart`
 - [ ] **Résultat : 3 exécutions réussies**
 - [ ] Capture : les 3 exécutions réussies + graphe du DAG
