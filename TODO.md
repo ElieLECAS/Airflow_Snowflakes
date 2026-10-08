@@ -121,12 +121,12 @@ Compétences visées : C8, C15, C16
 - [x] Mini DAG `airflow/dags/test_connexion.py` : connexion `snowflake_nyc_taxi` prouvée, le journal de la tâche affiche `('AIRFLOW_SVC', 'TRANSFORMER', 'NYC_TAXI_WH')`
 - [ ] **Rotation de la clé privée** : elle a été affichée en clair dans la conversation (commande `connections get`) ; ancienne clé à retirer (`UNSET RSA_PUBLIC_KEY`) après bascule sur `RSA_PUBLIC_KEY_2`
 - [ ] Capture du mini-DAG en succès (facultative) dans `docs/captures/`
-- [ ] DAG de chargement : vérifier que le fichier du mois existe, télécharger, `PUT`, `COPY INTO`
-- [ ] Nom du fichier calculé à partir de la **date logique**, pas de la date du jour
-- [ ] Relances automatiques (`retries`) sur le chargement
-- [ ] Activer le DAG avec l'interrupteur (pas de **Trigger** manuel), catchup sur janvier, février, mars 2025 (décision : janvier reste chargé, son run démontrera le rejeu `PUT` SKIPPED / « déjà chargé » ; février et mars se chargent pour de vrai)
-- [ ] Après toute modification du `.env` : `astro dev restart`
-- [ ] **Résultat : 3 exécutions réussies**
+- [x] DAG de chargement `airflow/dags/nyc_taxi_pipeline.py` : vérifier que le fichier du mois existe (HEAD), télécharger (taille contrôlée), `PUT`, `COPY INTO` (options du jour 2), contrôle du nombre de lignes en RAW
+- [x] Nom du fichier calculé à partir de la **date logique** (`logical_date`), pas de la date du jour ; refus explicite d'un run lancé avec Trigger
+- [x] Relances automatiques (`retries=2`, 5 minutes) sur le chargement
+- [x] Activer le DAG avec l'interrupteur (`unpause`, jamais Trigger), catchup sur janvier, février, mars 2025 : janvier = `PUT` SKIPPED / « déjà chargé » (rejeu), février et mars chargés pour de vrai
+- [ ] Après toute modification du `.env` : `astro dev restart` (à faire après la rotation de la clé)
+- [x] **Résultat : 3 exécutions réussies** (en 2 minutes) ; `RAW.YELLOW_TRIPDATA` = 11 198 026 lignes (3 475 226 + 3 577 543 + 4 145 257), identique au kit
 - [ ] Capture : les 3 exécutions réussies + graphe du DAG
 
 ---
