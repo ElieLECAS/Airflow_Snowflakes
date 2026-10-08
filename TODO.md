@@ -127,7 +127,7 @@ Compétences visées : C8, C15, C16
 - [x] Activer le DAG avec l'interrupteur (`unpause`, jamais Trigger), catchup sur janvier, février, mars 2025 : janvier = `PUT` SKIPPED / « déjà chargé » (rejeu), février et mars chargés pour de vrai
 - [ ] Après toute modification du `.env` : `astro dev restart` (à faire après la rotation de la clé)
 - [x] **Résultat : 3 exécutions réussies** (en 2 minutes) ; `RAW.YELLOW_TRIPDATA` = 11 198 026 lignes (3 475 226 + 3 577 543 + 4 145 257), identique au kit
-- [ ] Capture : les 3 exécutions réussies + graphe du DAG
+- [x] Capture : les 3 exécutions réussies + graphe du DAG (`jour3_grille_trois_executions.png`, `jour3_runs_reussis.png`, `jour3_liste_dags.png`, `jour3_graphe_dag.png`)
 
 ---
 
