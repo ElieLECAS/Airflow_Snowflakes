@@ -1,6 +1,6 @@
 # Réponse à la direction d'Hudson Cab Partners
 
-Période analysée : janvier à mars 2025. Données : les trajets de taxis jaunes publiés par la TLC, chargés, nettoyés et contrôlés par le pipeline du dépôt.
+Données : trajets de taxis jaunes de janvier à mars 2025 (source TLC), chargés et contrôlés par le pipeline du dépôt.
 
 ## La question
 
@@ -8,7 +8,7 @@ Où et quand la demande de taxis jaunes est-elle la plus forte à New York, et c
 
 ## La requête
 
-La requête classe les couples zone × heure × type de jour (semaine ou week-end) par **nombre moyen de trajets par jour**, garde les dix premiers, puis calcule pour chacun ce que rapporte un trajet payé par carte et un trajet payé en espèces. Elle lit les tables d'analyse du pipeline (`MART_ZONE_HOURLY_DEMAND`, `FCT_TRIPS`, `DIM_PAYMENT_TYPE`) et se trouve aussi dans `snowflake/requete_direction.sql`.
+Elle classe les combinaisons zone, heure et type de jour (semaine ou week-end) par nombre moyen de trajets par jour, garde les dix premières, puis calcule ce que rapporte un trajet payé par carte et un trajet payé en espèces. Elle lit `MART_ZONE_HOURLY_DEMAND`, `FCT_TRIPS` et `DIM_PAYMENT_TYPE`. On la retrouve dans `snowflake/requete_direction.sql`.
 
 ```sql
 -- Où et quand la demande de taxis jaunes est-elle la plus forte, et combien rapporte un trajet
@@ -69,7 +69,7 @@ JOIN par_paiement p
 ORDER BY t.avg_trips_per_day DESC;
 ```
 
-## Le résultat : les 10 premières lignes
+## Résultat
 
 | Zone | Heure | Type de jour | Trajets par jour | Revenu moyen par trajet | Payé par carte | Payé en espèces | Revenu par heure de course |
 |---|---|---|---|---|---|---|---|
@@ -84,20 +84,20 @@ ORDER BY t.avg_trips_per_day DESC;
 | Midtown Center | 19 h | semaine | 512,1 | 24,14 $ | 24,70 $ | 20,05 $ | 113,12 $ |
 | Midtown Center | 21 h | semaine | 494,3 | 23,01 $ | 23,97 $ | 19,04 $ | 108,84 $ |
 
-Toutes ces zones sont à Manhattan. L'heure est celle de la prise en charge (0 h = entre minuit et 1 h). Le « revenu par heure de course » est le total encaissé divisé par le temps passé en course, sans compter les attentes entre deux clients.
+Toutes ces zones sont à Manhattan. L'heure est celle de la prise en charge (0 h veut dire entre minuit et 1 h). Le revenu par heure de course est le total encaissé divisé par le temps passé en course, les attentes entre deux clients ne sont pas comptées.
 
-## Ce qu'il faut en retenir
+## Ce qu'on en tire
 
-1. **La demande est concentrée à Manhattan** (88 % des trajets y démarrent) et se joue à deux moments : les **nuits de week-end, de minuit à 2 h, à East Village et West Village** (jusqu'à 738 trajets par jour à East Village), et les **soirées de semaine, de 17 h à 21 h, à Midtown Center** (entre 494 et 596 trajets par jour).
-2. **Un trajet rapporte en moyenne 27 $ sur le trimestre**, entre 22 $ et 30 $ dans les dix créneaux les plus demandés, et un chauffeur qui y enchaîne les courses encaisse environ **106 à 117 $ par heure passée en course**.
-3. **Les trajets payés par carte rapportent plus que ceux payés en espèces (28,32 $ contre 23,70 $), mais l'écart vient des pourboires** : ils ne sont enregistrés que pour les cartes (4,14 $ en moyenne, contre 0 $ en espèces), alors que le tarif de la course est presque le même (18,13 $ contre 18,06 $).
+1. La demande est concentrée à Manhattan (88 % des trajets y démarrent) et se joue à deux moments : les nuits de week-end entre minuit et 2 h à East Village et West Village (jusqu'à 738 trajets par jour à East Village), et les soirées de semaine entre 17 h et 21 h à Midtown Center (de 494 à 596 trajets par jour).
+2. Un trajet rapporte 27 $ en moyenne sur le trimestre, entre 22 $ et 30 $ dans les dix créneaux les plus demandés. Un chauffeur qui enchaîne les courses dans ces créneaux encaisse environ 106 à 117 $ par heure de course.
+3. Un trajet payé par carte rapporte plus qu'un trajet payé en espèces (28,32 $ contre 23,70 $), mais l'écart vient des pourboires : ils ne sont enregistrés que pour les cartes (4,14 $ en moyenne, 0 $ en espèces), alors que le tarif de la course est presque le même (18,13 $ contre 18,06 $).
 
-## Les limites
+## Limites
 
-- **Trois mois seulement**, en plein hiver : la saisonnalité (été, jours fériés, grands événements) n'est pas couverte. Les créneaux de nuit de week-end peuvent être moins ou plus forts à une autre saison.
-- **7,3 % des trajets sont écartés** par les règles de qualité (815 648 sur 11 198 026) : montants nuls ou négatifs (4,4 %), distances nulles ou supérieures à 100 miles (2,6 %), durées anormales et trajets hors du mois du fichier. La réponse porte sur les 10 382 378 trajets valides.
-- **Zones inconnues** : 23 318 trajets démarrent d'une zone inconnue ou hors de New York. Ils sont exclus du classement.
-- **Pourboires en espèces non enregistrés** : la comparaison carte contre espèces compare des montants qui ne contiennent pas les mêmes choses. De plus, 17 % des trajets sont payés en « Flex Fare » (mode non détaillé) et ne figurent dans aucune des deux colonnes.
-- **Week-end** signifie samedi et dimanche : « 0 h du week-end » correspond aux nuits de vendredi à samedi et de samedi à dimanche.
-- **Choix du classement** : on classe par trajets *par jour*, parce que le trimestre compte 64 jours de semaine et 26 jours de week-end. En nombre total de trajets, le haut du classement ne contiendrait que des créneaux de semaine (Midtown Center en soirée, Times Square à 21 h, l'Upper East Side en journée) et aucune nuit de week-end.
-- **Taxis jaunes uniquement** : la demande de transport totale (taxis verts, voitures avec chauffeur) n'est pas mesurée.
+- Trois mois, en hiver : ni l'été, ni les jours fériés, ni les grands événements. Les créneaux de nuit de week-end peuvent être plus ou moins forts à une autre saison.
+- 7,3 % des trajets sont écartés par les règles de qualité (815 648 sur 11 198 026) : montants nuls ou négatifs (4,4 %), distances nulles ou supérieures à 100 miles (2,6 %), durées anormales, trajets hors du mois du fichier. La réponse porte sur les 10 382 378 trajets valides.
+- 23 318 trajets partent d'une zone inconnue ou hors de New York. Ils sont exclus du classement.
+- Les pourboires en espèces ne sont pas enregistrés : la comparaison carte contre espèces ne compare pas les mêmes montants. De plus, 17 % des trajets sont payés en « Flex Fare » et n'apparaissent dans aucune des deux colonnes.
+- « Week-end » veut dire samedi et dimanche : le créneau de 0 h du week-end correspond aux nuits de vendredi à samedi et de samedi à dimanche.
+- Le classement est fait par trajets par jour, parce que le trimestre compte 64 jours de semaine et 26 jours de week-end. Avec le nombre total de trajets, le haut du classement ne contiendrait que des créneaux de semaine (Midtown Center le soir, Times Square à 21 h, l'Upper East Side en journée).
+- Seuls les taxis jaunes sont mesurés, pas les taxis verts ni les voitures avec chauffeur.

@@ -2,7 +2,7 @@
 -- 03_raw.sql : objets de la couche RAW (jour 2)
 --
 -- Crée dans NYC_TAXI.RAW deux formats de fichier, un stage et les deux tables
--- décrites par CONTRAT_RAW.md. Aucune donnée n'est chargée ici : le chargement
+-- décrites par le contrat RAW du brief. Aucune donnée n'est chargée ici : le chargement
 -- (PUT puis COPY INTO) est fait par ingestion/charger.py.
 --
 -- À exécuter en entier dans Snowsight (Run All), avec le rôle des outils :

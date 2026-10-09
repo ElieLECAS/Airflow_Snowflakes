@@ -1,6 +1,6 @@
 # Fiche source : trajets des taxis jaunes (Yellow Taxi Trip Records)
 
-Brouillon rempli à partir du fichier de janvier 2025. Tous les chiffres ont été mesurés avec DuckDB sur `data/yellow_tripdata_2025-01.parquet`, sauf mention contraire.
+Fiche faite à partir du fichier de janvier 2025. Les chiffres viennent de DuckDB, lancé sur `data/yellow_tripdata_2025-01.parquet`, sauf mention contraire.
 
 ## Identité
 
@@ -20,7 +20,7 @@ Brouillon rempli à partir du fichier de janvier 2025. Tous les chiffres ont ét
 |---|---|---|---|---|
 | `yellow_tripdata_2025-01.parquet` | 59 158 238 octets (59,2 Mo, soit 56,4 Mio) | 3 475 226 | 20 | Taille : `os.path.getsize`. Lignes : DuckDB `SELECT COUNT(*) FROM 'yellow_tripdata_2025-01.parquet'`. Colonnes : DuckDB `DESCRIBE SELECT * FROM 'yellow_tripdata_2025-01.parquet'` |
 
-Février et mars 2025 seront mesurés au jour 2, au moment du chargement.
+Une fois les trois mois chargés, `RAW.YELLOW_TRIPDATA` contient 11 198 026 lignes.
 
 ## Colonnes
 
@@ -86,5 +86,5 @@ Entre parenthèses : nombre de lignes dans le fichier de janvier.
 - **Dates hors période** : les prises en charge vont du 31 décembre 2024 au 1er février 2025. 22 trajets sont hors de janvier, et 124 arrivent avant d'être partis (`dropoff` avant `pickup`).
 - **Montants et distances aberrants** : `fare_amount` négatif sur 144 118 lignes, `total_amount` négatif sur 63 037 lignes et nul sur 559. Le total va de -901 $ à 863 380,37 $ pour une médiane de 19,95 $.
 - **Distances et passagers** : 90 893 trajets ont une distance de 0, 162 dépassent 100 miles, 24 656 ont 0 passager.
-- **`total_amount` n'est pas toujours la somme de ses composantes** : `fare + extra + mta_tax + tip + tolls + improvement_surcharge + congestion_surcharge + Airport_fee + cbd_congestion_fee` égale le total (à 1 cent près) pour 2 363 419 lignes seulement, soit 68 %. À creuser avant de conclure sur ce qui est inclus dans le total.
+- **`total_amount` n'est pas toujours la somme de toutes ses colonnes** : `fare + extra + mta_tax + tip + tolls + improvement_surcharge + congestion_surcharge + Airport_fee + cbd_congestion_fee` égale le total (à 1 cent près) pour 2 363 419 lignes seulement, soit 68 %. La différence vient du fournisseur. Chez le fournisseur 2 (78 % des trajets), la somme complète est juste pour 2 292 418 trajets sur 2 719 860. Chez le fournisseur 1, elle ne l'est que pour 70 355 trajets sur 753 671, alors que la somme sans congestion, aéroport ni `cbd` est juste pour 676 098 : il range ces suppléments dans `extra`, et les ajouter une seconde fois dépasserait le total. C'est pour cela que `fct_trips.sql` ne les rajoute pas.
 - **Types entiers mélangés** : `passenger_count`, `RatecodeID` et `payment_type` sont en 64 bits, `VendorID` et les zones en 32 bits. Le brief prévient qu'une même colonne peut changer de type d'un mois à l'autre : en RAW, il faudra des types larges.

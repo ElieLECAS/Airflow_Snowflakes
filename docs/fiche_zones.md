@@ -1,6 +1,6 @@
 # Fiche source : liste des zones de taxi (Taxi Zone Lookup)
 
-Brouillon rempli à partir de `data/taxi_zone_lookup.csv`. Tous les chiffres ont été mesurés avec DuckDB.
+Fiche faite à partir de `data/taxi_zone_lookup.csv`. Les chiffres viennent de DuckDB.
 
 ## Identité
 
