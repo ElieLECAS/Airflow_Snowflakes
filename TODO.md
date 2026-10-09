@@ -144,11 +144,11 @@ Compétences visées : C9, C15
 - [x] Une tâche par fichier SQL, regroupées par couche (`split_statements=True` pour les fichiers multi-instructions) : `00_tables`, groupe `staging` (3), `intermediate` (2), `marts` (9) ; le DAG compte 22 tâches avec les contrôles et le chargement
 - [x] Brancher le contrôle fourni `controles/raw_mois_charge.sql` (`retries=0`) : `controle_raw_mois_charge`, en succès sur janvier
 - [x] Écrire au moins **2 contrôles** de plus : `controles/flagged_taux_rejet.sql` (seuil `max_pct_rejets` = 10 %, les mois rejettent 6,4 / 7,6 / 7,7 %) et `controles/enriched_sans_doublon.sql` ; testés dans Snowflake sur les 3 mois, branchés avec `retries=0`
-- [ ] **Faire échouer un contrôle exprès** (seuil durci) : les tâches suivantes ne s'exécutent pas, puis remettre le seuil
+- [x] **Faire échouer un contrôle exprès** (seuil `max_pct_rejets` à 0) : sur février, `controle_flagged_taux_rejet` en `failed` et les 11 tâches suivantes (`int_trips__enriched`, contrôle des doublons, 9 marts) en `upstream_failed` ; seuil remis à 10, février relancé, 18 tables sur 18 identiques aux valeurs de référence
 - [x] Clear des 3 exécutions pour que les nouvelles tâches tournent (22 tâches en succès, environ 55 s par mois)
 - [x] Relancer février : le nombre de lignes de chaque table reste identique (18 tables sur 18 identiques ; un seul chargement par fichier dans `COPY_HISTORY`)
 - [x] **Résultat : 10 382 378 trajets valides dans `FCT_TRIPS`** (identique au kit ; `FLAGGED` 11 198 026, `MART_ZONE_HOURLY_DEMAND` 11 524, `MART_DATA_QUALITY` 18)
-- [ ] Capture : un contrôle en échec
+- [x] Capture : un contrôle en échec (`docs/captures/jour4_graphe_echec.png` : run en échec, groupe `intermediate` replié ; une capture avec le groupe déplié, qui montrerait le nœud rouge, peut être ajoutée)
 
 Volumes attendus après les 3 mois :
 
