@@ -64,7 +64,7 @@ def executer(sql: str, parametres: tuple | None = None) -> list:
         "max_trip_duration_min": 180,                        # int_trips__flagged.sql
         "start_month": "2025-01-01",                         # dim_date.sql
         "end_month": "2025-04-01",                           # dim_date.sql
-        "max_pct_rejets": 0,                                 # TEST ECHEC EXPRES : remettre 10 apres la capture
+        "max_pct_rejets": 10,                                # controles/flagged_taux_rejet.sql (% de trajets écartés)
     },
 )
 def nyc_taxi_pipeline():
