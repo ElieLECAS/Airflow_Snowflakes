@@ -128,7 +128,7 @@ Puis `astro dev restart`. Sans cette variable, la tâche ne fait rien. Le webhoo
 
 ## Choix techniques
 
-- **Clés plutôt que mot de passe.** L'utilisateur de service est de type `SERVICE`, il ne peut pas se connecter avec un mot de passe. Il accepte deux clés publiques, une par personne du binôme, sans échange de clé privée.
+- **Clés plutôt que mot de passe.** L'utilisateur de service est de type `SERVICE`, il ne peut pas se connecter avec un mot de passe. Il accepte deux clés publiques à la fois, ce qui permet de renouveler une clé sans interruption.
 - **Un rôle dédié aux outils.** Aucun outil n'utilise `ACCOUNTADMIN`. `TRANSFORMER` est rattaché à `SYSADMIN`, qui voit donc tout ce qu'il crée.
 - **Types larges en RAW.** `NUMBER`, `FLOAT`, `TIMESTAMP_NTZ`, `VARCHAR` : un même champ change de type d'un mois à l'autre dans les fichiers TLC, et RAW ne doit rien refuser.
 - **`COPY INTO` sans `FORCE`.** Snowflake retient 64 jours les fichiers déjà chargés. C'est ce qui rend le rechargement d'un mois sans effet.
@@ -154,7 +154,3 @@ Deux endroits à changer : `end_date` du DAG dans `airflow/dags/nyc_taxi_pipelin
 - `docs/anomalies_janvier.md` : trajets rejetés en janvier, comptés à la main
 - `docs/fiche_trajets.md`, `docs/fiche_zones.md` : fiches des deux sources
 - `docs/captures/` : captures des runs, des droits, des crédits et des contrôles
-
-## Auteur
-
-Elie Lecas
