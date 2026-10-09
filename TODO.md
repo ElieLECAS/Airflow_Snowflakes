@@ -148,7 +148,7 @@ Compétences visées : C9, C15
 - [x] Clear des 3 exécutions pour que les nouvelles tâches tournent (22 tâches en succès, environ 55 s par mois)
 - [x] Relancer février : le nombre de lignes de chaque table reste identique (18 tables sur 18 identiques ; un seul chargement par fichier dans `COPY_HISTORY`)
 - [x] **Résultat : 10 382 378 trajets valides dans `FCT_TRIPS`** (identique au kit ; `FLAGGED` 11 198 026, `MART_ZONE_HOURLY_DEMAND` 11 524, `MART_DATA_QUALITY` 18)
-- [x] Capture : un contrôle en échec (`docs/captures/jour4_graphe_echec.png` : run en échec, groupe `intermediate` replié ; une capture avec le groupe déplié, qui montrerait le nœud rouge, peut être ajoutée)
+- [x] Capture : un contrôle en échec (`docs/captures/jour4_controle_en_echec.png` : groupe `intermediate` déplié, `controle_flagged_taux_rejet` en rouge et les 2 tâches suivantes en `upstream_failed` ; `jour4_graphe_echec.png` : vue d'ensemble du run en échec)
 
 Volumes attendus après les 3 mois :
 
