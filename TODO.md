@@ -139,15 +139,15 @@ Compétences visées : C9, C15
 
 - [ ] Lire la section 6 (fichiers SQL, paramètres, contrôles, groupes de tâches)
 - [ ] Lire les fichiers SQL fournis : pour chacun, quelles tables il lit, laquelle il crée
-- [ ] Déduire l'ordre d'exécution : `00_tables.sql`, `staging/`, `intermediate/`, `marts/`
-- [ ] Déclarer les 4 paramètres du DAG : `max_trip_distance_miles=100`, `max_trip_duration_min=180`, `start_month="2025-01-01"`, `end_month="2025-04-01"`
-- [ ] Une tâche par fichier SQL, regroupées par couche (`split_statements=True` pour les fichiers multi-instructions)
-- [ ] Brancher le contrôle fourni `controles/raw_mois_charge.sql` (`retries=0`)
-- [ ] Écrire au moins **2 contrôles** de plus : trajets en double, trop de trajets écartés
+- [x] Déduire l'ordre d'exécution : `00_tables.sql`, `staging/`, `intermediate/`, `marts/` (déduit des `FROM`/`JOIN` ; à relire par toi pour la revue)
+- [x] Déclarer les 4 paramètres du DAG : `max_trip_distance_miles=100`, `max_trip_duration_min=180`, `start_month="2025-01-01"`, `end_month="2025-04-01"` + `template_searchpath`
+- [x] Une tâche par fichier SQL, regroupées par couche (`split_statements=True` pour les fichiers multi-instructions) : `00_tables`, groupe `staging` (3), `intermediate` (2), `marts` (9) ; le DAG compte 22 tâches avec les contrôles et le chargement
+- [x] Brancher le contrôle fourni `controles/raw_mois_charge.sql` (`retries=0`) : `controle_raw_mois_charge`, en succès sur janvier
+- [x] Écrire au moins **2 contrôles** de plus : `controles/flagged_taux_rejet.sql` (seuil `max_pct_rejets` = 10 %, les mois rejettent 6,4 / 7,6 / 7,7 %) et `controles/enriched_sans_doublon.sql` ; testés dans Snowflake sur les 3 mois, branchés avec `retries=0`
 - [ ] **Faire échouer un contrôle exprès** (seuil durci) : les tâches suivantes ne s'exécutent pas, puis remettre le seuil
-- [ ] Clear des 3 exécutions pour que les nouvelles tâches tournent
-- [ ] Relancer février : le nombre de lignes de chaque table reste identique
-- [ ] **Résultat : 10 382 378 trajets valides dans `FCT_TRIPS`**
+- [x] Clear des 3 exécutions pour que les nouvelles tâches tournent (22 tâches en succès, environ 55 s par mois)
+- [x] Relancer février : le nombre de lignes de chaque table reste identique (18 tables sur 18 identiques ; un seul chargement par fichier dans `COPY_HISTORY`)
+- [x] **Résultat : 10 382 378 trajets valides dans `FCT_TRIPS`** (identique au kit ; `FLAGGED` 11 198 026, `MART_ZONE_HOURLY_DEMAND` 11 524, `MART_DATA_QUALITY` 18)
 - [ ] Capture : un contrôle en échec
 
 Volumes attendus après les 3 mois :
