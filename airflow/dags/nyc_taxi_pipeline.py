@@ -8,19 +8,23 @@ relancer le run de janvier en octobre recharge bien le fichier de janvier.
         -> groupe intermediate : int_trips__flagged -> contrôle du taux de rejet
            -> int_trips__enriched -> contrôle des doublons
         -> groupe marts : 5 dimensions + fct_trips en parallèle, puis 3 tables d'analyse
+        -> notifier_discord (succès ou échec du run)
 
 Une tâche SQL égale un fichier de include/sql/. Les fichiers contiennent {{ ds }}, {{ logical_date }} et
 {{ params.xxx }}, remplacés par Airflow avant l'exécution.
 
 Rejouable : Snowflake retient les fichiers déjà copiés dans la table, relancer un mois n'ajoute aucune ligne.
 La connexion `snowflake_nyc_taxi` vient de airflow/.env (variable AIRFLOW_CONN_SNOWFLAKE_NYC_TAXI) :
-aucune clé dans ce fichier, ni dans l'image Docker.
+aucune clé dans ce fichier, ni dans l'image Docker. Le webhook Discord vient de la même façon de
+airflow/.env (variable DISCORD_WEBHOOK_URL).
 
 À activer avec l'interrupteur, jamais avec Trigger : un run lancé à la main n'a pas de date logique.
 """
 import logging
+import os
 from contextlib import closing
 from pathlib import Path
+from urllib.parse import quote
 
 import pendulum
 import requests
@@ -218,7 +222,60 @@ def nyc_taxi_pipeline():
         for tache in dimensions_et_faits:        # une boucle : Python ne sait pas relier deux listes avec >>
             tache >> analyses
 
-    chargement >> controle_raw_mois_charge >> creer_tables >> staging >> intermediate >> marts
+    # Dernière tâche : un message Discord à la fin de chaque run, réussi ou non. all_done = elle s'exécute
+    # même si une tâche avant a échoué. Elle relance ensuite une erreur si une tâche a échoué : sans cela,
+    # elle réussirait et Airflow marquerait le run « réussi » (l'état du run suit ses dernières tâches).
+    @task(trigger_rule="all_done", retries=0)
+    def notifier_discord():
+        contexte = get_current_context()
+        ti = contexte["ti"]
+        run_id = contexte["run_id"]
+        date_logique = contexte["logical_date"]
+        mois = date_logique.strftime("%Y-%m") if date_logique else "inconnu"
+
+        etats = ti.get_task_states(dag_id=ti.dag_id, run_ids=[run_id]).get(run_id, {})
+        en_echec = sorted(t for t, e in etats.items() if e == "failed" and t != ti.task_id)
+        non_executees = sum(1 for t, e in etats.items() if e == "upstream_failed")
+
+        if en_echec:
+            titre = f"Échec du pipeline NYC Taxi : {mois}"
+            detail = "Tâche en échec : " + ", ".join(f"`{t}`" for t in en_echec)
+            if non_executees:
+                detail += f"\n{non_executees} tâche(s) suivante(s) non exécutée(s)"
+            couleur = 15158332                                   # rouge
+        else:
+            titre = f"Pipeline NYC Taxi terminé : {mois}"
+            try:
+                valides = executer(
+                    "SELECT COUNT(*) FROM NYC_TAXI.INTERMEDIATE.INT_TRIPS__ENRICHED WHERE source_file_month = %s",
+                    (f"{mois}-01",),
+                )[0][0]
+                detail = f"{valides:,} trajets valides".replace(",", " ")
+            except Exception:                                    # le message ne doit pas dépendre de cette requête
+                log.warning("Comptage des trajets valides impossible", exc_info=True)
+                detail = "Toutes les tâches ont réussi"
+            couleur = 3066993                                    # vert
+
+        interface = os.environ.get("AIRFLOW_UI_URL", "http://localhost:8080")
+        lien = f"{interface}/dags/{ti.dag_id}/runs/{quote(run_id, safe='')}"
+        webhook = os.environ.get("DISCORD_WEBHOOK_URL")
+        if not webhook:
+            log.warning("DISCORD_WEBHOOK_URL absente : aucune notification envoyée")
+        else:
+            try:
+                requests.post(
+                    webhook,
+                    json={"embeds": [{"title": titre, "description": f"{detail}\n[Voir le run]({lien})", "color": couleur}]},
+                    timeout=10,
+                ).raise_for_status()
+                log.info("Notification Discord envoyée")
+            except requests.RequestException as erreur:          # Discord injoignable : le pipeline n'échoue pas pour autant
+                log.warning("Notification Discord non envoyée : %s", type(erreur).__name__)
+
+        if en_echec:
+            raise AirflowFailException(f"Run en échec : {', '.join(en_echec)}")
+
+    chargement >> controle_raw_mois_charge >> creer_tables >> staging >> intermediate >> marts >> notifier_discord()
 
 
 nyc_taxi_pipeline()

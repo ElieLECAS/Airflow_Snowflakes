@@ -168,11 +168,11 @@ Volumes attendus après les 3 mois :
 Dossiers : `docs/`, `README.md`
 Compétences visées : C3, C9, C16
 
-- [ ] Requête SQL qui répond à la direction (où et quand la demande est la plus forte, combien rapporte un trajet)
-- [ ] `docs/REPONSE.md` (depuis `REPONSE_MODELE.md`) : requête finale, top 10 zones × heures, 3 phrases d'interprétation
-- [ ] Compter soi-même les trajets anormaux d'un mois et comparer à `MART_DATA_QUALITY` (une seule raison de rejet par trajet)
-- [ ] Mesurer les crédits consommés (`WAREHOUSE_METERING_HISTORY`, rôle ACCOUNTADMIN) + capture
-- [ ] Lister les droits du rôle des outils + prouver un accès refusé hors périmètre + capture
+- [x] Requête SQL qui répond à la direction (où et quand la demande est la plus forte, combien rapporte un trajet) : `snowflake/requete_direction.sql`, classement par trajets **par jour** (64 jours de semaine, 26 de week-end), zones 264/265 exclues, 1,4 s
+- [x] `docs/REPONSE.md` (depuis `REPONSE_MODELE.md`) : requête finale, top 10 zones × heures, 3 phrases d'interprétation, limites : **rédigé, à relire et à reformuler avec tes mots** (le jury interrogera sur ces conclusions)
+- [x] Compter soi-même les trajets anormaux d'un mois et comparer à `MART_DATA_QUALITY` (une seule raison de rejet par trajet) : janvier, 223 889 écartés ; somme des règles comptées seules 239 503, écart 15 614 expliqué et vérifié ; compte rendu dans `docs/anomalies_janvier.md`
+- [x] Mesurer les crédits consommés (`WAREHOUSE_METERING_HISTORY`, rôle ACCOUNTADMIN) + capture : `NYC_TAXI_WH` 0,9046 crédit en tout (5 et 9 octobre), `COMPUTE_WH` 0,0001, services cloud 0,0010 ; captures `jour5_credits_par_jour.png` et `jour5_credits_total.png`
+- [x] Lister les droits du rôle des outils + prouver un accès refusé hors périmètre + capture : 15 droits explicites + 21 OWNERSHIP, aucun SELECT ni ALL PRIVILEGES ; trois refus (facturation, CREATE SCHEMA, MODIFY du warehouse) ; captures `jour5_droits_finaux.png`, `jour5_refus_facturation.png`, `jour5_refus_create_schema.png`, `jour5_refus_warehouse.png`
 - [ ] Capture : historique de chargement Snowflake
 - [ ] README complet : description, prérequis, installation pas à pas, schéma, rôle de chaque partie, choix techniques, auteurs
 - [ ] Un autre binôme pourrait relancer le dépôt à partir du README
